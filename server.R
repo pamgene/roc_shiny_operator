@@ -78,10 +78,11 @@ server <- shinyServer(function(input, output, session) {
     })
     
     output$conmat = renderTable({
-      res = getMetrics()
-      res$table %>%
-        as.data.frame()
-    })
+      aTab = getMetrics()$table
+      tabdf = data.frame(prediction = rownames(aTab), neg = aTab[,1], pos = aTab[,2])
+      colnames(tabdf) = c("prediction", rownames(aTab))
+      tabdf
+    },title = "Reference")
   })
 })
 

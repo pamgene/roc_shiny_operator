@@ -17,9 +17,9 @@ ui <- shinyUI(fluidPage(
                plotOutput("roc")
       ),
       tabPanel("Metrics",
-                h3("Positive class used"),
+                h4("Positive class used"),
                 textOutput("ispos"),
-                h3("Confusion Matrix"),
+                h4("Confusion Matrix"),
                 tableOutput("conmat"),
                fluidRow(
                  column(6, tableOutput("overall")),
