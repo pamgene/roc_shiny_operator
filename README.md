@@ -10,7 +10,7 @@ Input projection|.
 ---|---
 `y-axis`        | numeric, continuous predictor  
 `row`  or `column`| factor, observations 
-`colors`        | factor, predicted class 
+`colors`        | factor, predicted class, when omitted the predicted class can be set interactively by setting a threshold. 
 `labels`        | factor, reference class 
 
 Output relations|.

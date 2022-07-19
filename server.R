@@ -29,25 +29,31 @@ server <- shinyServer(function(input, output, session) {
     getMode()
   })
   
+  predAtInput = reactive({
+    anyPredAtInput(session)
+  })
+
+  
   observe({
     df = dataInput()
     updateSelectInput(session, "posclass", choices = levels(df$class.label))
     
-    setPosClass = reactive({
-        if (input$posclass != ""){
-          ref  = input$posclass
-        } else {
-          ref = levels(df$class.label)[1]
-        }
-        df %>%
-          mutate(class.label = relevel(class.label, ref = ref),
-                 class.pred = relevel(class.pred, ref = ref))
-      
-    })
+    if (predAtInput()){
+      shinyjs::disable("thr")
+    } else {
+      thr.min = df$.y %>%
+        min() %>%
+        floor()
+      thr.max = df$.y %>%
+        max() %>%
+        ceiling()
+      thr.val = mean(c(thr.max, thr.min))
+      updateSliderInput(session, "thr", min = thr.min, max = thr.max, value = thr.val)
+    }
     
     output$roc = renderPlot({
-      #browser()
-      setPosClass() %>%
+      df %>%
+        setPosClass(input$posclass) %>%
         dplyr::select(class.label,  .y) %>%
         as.data.frame() %>%
         droc() %>%
@@ -55,7 +61,13 @@ server <- shinyServer(function(input, output, session) {
     })
     
     getMetrics = reactive({
-      df_set = setPosClass()
+      df_set = df %>%
+        setPosClass(input$posclass) 
+      
+        if(!predAtInput()){
+          df_set = df_set %>%
+            setPredictedClass(input$thr)
+        }
       df_set %>%
         dplyr::select(class.pred, class.label) %>%
         as.data.frame() %>%        
@@ -90,21 +102,55 @@ getValues <- function(session){
   ctx <- getCtx(session)
   df = ctx %>% 
     select(.y, .ri,.ci) 
-  if(length(ctx$colors) != 1) stop("Define predicted class using single variable as color in Tercen")
+  
+  if(length(ctx$colors) > 1) stop("Define predicted class using single variable as color in Tercen")
   if(length(ctx$labels) != 1) stop("Define known class using a single variable as label in Tercen")
   
-  df %>%
-    bind_cols(ctx$select(ctx$colors)) %>%
-    bind_cols(ctx$select(ctx$labels)) %>%
-    setNames(c(".y", ".ri", ".ci", "class.pred", "class.label")) %>%
-    mutate(class.pred = class.pred %>% as.factor,
-           class.label = class.label %>% as.factor)
+  if(length(ctx$colors)>0){
+    df = df %>%
+      bind_cols(ctx$select(ctx$colors)) %>%
+      bind_cols(ctx$select(ctx$labels)) %>%
+      setNames(c(".y", ".ri", ".ci", "class.pred", "class.label")) %>%
+      mutate(class.pred = class.pred %>% as.factor,
+             class.label = class.label %>% as.factor)
+  } else {
+    df = df %>%
+      bind_cols(ctx$select(ctx$labels)) %>%
+      setNames(c(".y", ".ri", ".ci", "class.label")) %>%
+      mutate(class.label = class.label %>% as.factor,
+             class.pred = class.label)
+  }
+  df
 }
 
 getMode <- function(session){
   # retreive url query parameters provided by tercen
   query = parseQueryString(session$clientData$url_search)
   return(query[["mode"]])
+}
+
+anyPredAtInput = function(session)({
+  ctx <- getCtx(session)
+  length(ctx$colors) > 0
+})
+
+setPredictedClass = function(d, thr){
+    d %>%
+      mutate(class.pred = case_when(.y < thr ~ levels(class.label)[2],
+                                    TRUE ~ levels(class.label)[1]),
+             class.pred = class.pred %>% as.factor)
+  
+}
+
+setPosClass = function(d, posclass){
+  if (posclass != ""){
+    ref  = posclass
+  } else {
+    ref = levels(d$class.label)[1]
+  }
+  d %>%
+    mutate(class.label = relevel(class.label, ref = ref),
+           class.pred = relevel(class.pred, ref = ref))
 }
 
 droc = function(df){

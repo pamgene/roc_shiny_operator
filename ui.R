@@ -9,7 +9,8 @@ ui <- shinyUI(fluidPage(
   titlePanel("ROC"),
   
   sidebarPanel(
-      selectInput("posclass", "Set positive class", choices = "")
+      selectInput("posclass", "Set positive class", choices = ""),
+      sliderInput("thr", "Set threshold", min = 0, max = 1, value = 0.5, step = 0.01)
   ),
   mainPanel(
     tabsetPanel(
