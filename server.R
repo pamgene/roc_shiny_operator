@@ -62,12 +62,28 @@ server <- shinyServer(function(input, output, session) {
     })
     
     output$roc = renderPlot({
-        set_df() %>%
+      aRoc = set_df() %>%
         dplyr::select(class.label,  .y) %>%
         as.data.frame() %>%
-        droc() %>%
-        plot(print.auc = TRUE)
-    })
+        droc()
+        rdf = data.frame(sensitivity = aRoc$sensitivities, specificity = aRoc$specificities, thr = aRoc$thresholds)
+        thr.idx = which.min( abs(input$thr - rdf$thr))
+        rp = rdf %>% 
+          arrange(sensitivity) %>%
+          ggplot(aes(x = specificity, y = sensitivity)) + 
+          geom_line(colour = "blue") +
+          theme_bw() +
+          xlim(c(0,1)) +
+          ylim(c(0,1)) + 
+          ggtitle(paste("AUC:", round(aRoc$auc,3))) +
+          geom_vline(xintercept = rdf$specificity[thr.idx], colour = "darkgreen", alpha = 0.32) +
+          geom_hline(yintercept = rdf$sensitivity[thr.idx], colour = "darkgreen", alpha = 0.32) +
+          scale_x_reverse()
+        
+        rp +
+          geom_abline(slope =1, intercept = 1, colour = "gray")
+    }, 
+    width = 400)
     
     getMetrics = reactive({
       df_set = set_df()
