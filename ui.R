@@ -10,7 +10,9 @@ ui <- shinyUI(fluidPage(
   
   sidebarPanel(
       selectInput("posclass", "Set positive class", choices = ""),
-      sliderInput("thr", "Set threshold", min = 0, max = 1, value = 0.5, step = 0.01)
+      sliderInput("thr", "Set threshold", min = 0, max = 1, value = 0.5, step = 0.01),
+      actionButton("done", "Return predicted class", enable = FALSE),
+      h5(textOutput("msg"))
   ),
   mainPanel(
     tabsetPanel(
@@ -26,7 +28,10 @@ ui <- shinyUI(fluidPage(
                  column(6, tableOutput("overall")),
                  column(6, tableOutput("byclass"))
                )
-      )     
+      ),
+      tabPanel("Waterfall",
+               plotOutput("wf")
+      )
     )
   )
   

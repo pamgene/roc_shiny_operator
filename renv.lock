@@ -52,10 +52,10 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-57",
+      "Version": "7.3-58",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "71476c1d88d1ebdf31580e5a257d5d31"
+      "Hash": "4bf2c61e656bbc238634c798c208d386"
     },
     "Matrix": {
       "Package": "Matrix",
@@ -196,6 +196,13 @@
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "ebaa97ac99cc2daf04e77eecc7b781d7"
+    },
+    "codetools": {
+      "Package": "codetools",
+      "Version": "0.2-18",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "019388fc48e48b3da0d3a76ff94608a8"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -358,6 +365,13 @@
       "Repository": "CRAN",
       "Hash": "0fb26d0674c82705c6b701d1a61e02ea"
     },
+    "ggsci": {
+      "Package": "ggsci",
+      "Version": "2.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "81ccb8213ed592598210afd10c3a5936"
+    },
     "globals": {
       "Package": "globals",
       "Version": "0.15.1",
@@ -416,10 +430,10 @@
     },
     "htmltools": {
       "Package": "htmltools",
-      "Version": "0.5.2",
+      "Version": "0.5.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "526c484233f42522278ab06fb185cb26"
+      "Hash": "6496090a9e00f8354b811d1a2d47b566"
     },
     "httpuv": {
       "Package": "httpuv",
@@ -619,10 +633,10 @@
     },
     "pillar": {
       "Package": "pillar",
-      "Version": "1.7.0",
+      "Version": "1.8.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "51dfc97e1b7069e9f7e6f83f3589c22e"
+      "Hash": "f95cf85794546c4ac2b9a6ca42e671ff"
     },
     "pkgconfig": {
       "Package": "pkgconfig",

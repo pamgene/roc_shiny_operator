@@ -3,7 +3,7 @@ library(tercen)
 library(tidyverse)
 library(caret)
 library(pROC)
-
+library(ggsci)
 ############################################
 #### This part should not be modified
 getCtx <- function(session) {
@@ -26,18 +26,17 @@ server <- shinyServer(function(input, output, session) {
   })
   
   mode = reactive({
-    getMode()
+    getMode(session)
   })
   
   predAtInput = reactive({
     anyPredAtInput(session)
   })
 
-  
   observe({
     df = dataInput()
     updateSelectInput(session, "posclass", choices = levels(df$class.label))
-    
+    shinyjs::disable("done")
     if (predAtInput()){
       shinyjs::disable("thr")
     } else {
@@ -51,9 +50,19 @@ server <- shinyServer(function(input, output, session) {
       updateSliderInput(session, "thr", min = thr.min, max = thr.max, value = thr.val)
     }
     
-    output$roc = renderPlot({
-      df %>%
+    set_df = reactive({
+      result = df %>% 
         setPosClass(input$posclass) %>%
+        mutate(observation = (1:n()) %>% as.character)
+        if(!predAtInput()){
+          result = result %>%
+            setPredictedClass(input$thr)
+        }
+        result
+    })
+    
+    output$roc = renderPlot({
+        set_df() %>%
         dplyr::select(class.label,  .y) %>%
         as.data.frame() %>%
         droc() %>%
@@ -61,18 +70,13 @@ server <- shinyServer(function(input, output, session) {
     })
     
     getMetrics = reactive({
-      df_set = df %>%
-        setPosClass(input$posclass) 
-      
-        if(!predAtInput()){
-          df_set = df_set %>%
-            setPredictedClass(input$thr)
-        }
+      df_set = set_df()
       df_set %>%
         dplyr::select(class.pred, class.label) %>%
         as.data.frame() %>%        
         cmat(posclass = levels(df_set$class.label)[1])
     })
+    
     
     output$overall = renderTable({
       res = getMetrics()
@@ -95,6 +99,34 @@ server <- shinyServer(function(input, output, session) {
       colnames(tabdf) = c("prediction", rownames(aTab))
       tabdf
     },title = "Reference")
+    
+    output$wf = renderPlot({
+      wf = set_df() %>%
+        ggplot(aes(x = reorder(observation, .y), y = .y, fill = class.label)) + geom_bar(stat = "identity")
+      wf + geom_hline(yintercept = input$thr, colour = "gray") + coord_flip() + scale_fill_jama()
+    }, 
+    height = 650)
+    
+    m = mode()
+    if ( !is.null(m) && m == "run" && !predAtInput()) {
+      shinyjs::enable("done")
+    }
+    
+    observeEvent(input$done, {
+      shinyjs::disable("done")
+      msgReactive$msg = "Running ... please wait ..."
+      tryCatch({
+        set_df() %>%
+          select(.ri, .ci, observation, predicted_class = class.pred )
+          ctx$addNamespace() %>%
+          ctx$save()
+        msgReactive$msg = "Done"
+      }, error = function(e) {
+        msgReactive$msg = paste0("Failed : ", toString(e))
+        print(paste0("Failed : ", toString(e)))
+      })
+    })
+    
   })
 })
 
@@ -139,7 +171,6 @@ setPredictedClass = function(d, thr){
       mutate(class.pred = case_when(.y < thr ~ levels(class.label)[2],
                                     TRUE ~ levels(class.label)[1]),
              class.pred = class.pred %>% as.factor)
-  
 }
 
 setPosClass = function(d, posclass){
