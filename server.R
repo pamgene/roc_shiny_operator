@@ -79,9 +79,10 @@ server <- shinyServer(function(input, output, session) {
           geom_vline(xintercept = rdf$specificity[thr.idx], colour = "darkgreen", alpha = 0.32) +
           geom_hline(yintercept = rdf$sensitivity[thr.idx], colour = "darkgreen", alpha = 0.32) +
           scale_x_reverse()
-        
+
         rp +
           geom_abline(slope =1, intercept = 1, colour = "gray")
+       
     }, 
     width = 400)
     
@@ -201,7 +202,8 @@ setPosClass = function(d, posclass){
 }
 
 droc = function(df){
-  aRoc = roc(response = df[,1], predictor = df[,2])
+  lv= levels(df[,1])
+  aRoc = roc(response = df[,1], predictor = df[,2], levels = c(lv[2], lv[1]))
 }
 
 cmat = function(df, posclass = NULL){
