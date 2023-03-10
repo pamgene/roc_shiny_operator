@@ -3,6 +3,6 @@
   "description": "Shiny operator for creating a ROC curve and classification metrics",
   "tags": ["classification", "ROC", "metrics"],
   "authors": ["rdw"],
-  "urls": ["https://github.com/tercen/roc_shiny_operator"],
-  "isViewOnly": false
+  "urls": ["https://github.com/pamgene/roc_shiny_operator"],
+  "isViewOnly": [false]
 }
